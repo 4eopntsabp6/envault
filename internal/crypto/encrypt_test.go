@@ -83,3 +83,21 @@ func TestDecryptShortCiphertext(t *testing.T) {
 		t.Fatal("expected error for short ciphertext")
 	}
 }
+
+func TestDecryptTamperedCiphertext(t *testing.T) {
+	key := DeriveKey("passphrase")
+	plaintext := []byte("TOKEN=abc123")
+
+	ciphertext, err := Encrypt(key, plaintext)
+	if err != nil {
+		t.Fatalf("Encrypt failed: %v", err)
+	}
+
+	// Flip a byte in the ciphertext to simulate tampering
+	ciphertext[len(ciphertext)-1] ^= 0xff
+
+	_, err = Decrypt(key, ciphertext)
+	if err == nil {
+		t.Fatal("expected decryption to fail for tampered ciphertext")
+	}
+}
