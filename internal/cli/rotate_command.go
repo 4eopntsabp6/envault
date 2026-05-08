@@ -12,6 +12,8 @@ import (
 
 // RunRotate re-encrypts the vault at vaultPath with a new password.
 // It reads old and new passwords from the terminal if not provided.
+// If both passwords are supplied as arguments (e.g. in tests), no
+// terminal prompts are shown.
 func RunRotate(vaultPath, oldPassword, newPassword string, out io.Writer) error {
 	if oldPassword == "" {
 		p, err := readPassword("Enter current password: ")
@@ -36,6 +38,10 @@ func RunRotate(vaultPath, oldPassword, newPassword string, out io.Writer) error 
 		newPassword = p
 	}
 
+	if oldPassword == newPassword {
+		return fmt.Errorf("new password must differ from the current password")
+	}
+
 	result, err := rotation.Rotate(vaultPath, oldPassword, newPassword)
 	if err != nil {
 		return fmt.Errorf("rotation failed: %w", err)
@@ -51,6 +57,8 @@ func RunRotate(vaultPath, oldPassword, newPassword string, out io.Writer) error 
 	return nil
 }
 
+// readPassword prints prompt to stderr, reads a password from the terminal
+// without echoing, then prints a newline to stderr before returning.
 func readPassword(prompt string) (string, error) {
 	fmt.Fprint(os.Stderr, prompt)
 	bytes, err := term.ReadPassword(int(os.Stdin.Fd()))
