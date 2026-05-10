@@ -43,6 +43,14 @@ func TestSetAndGetTags(t *testing.T) {
 	}
 }
 
+func TestGetTagsMissingKey(t *testing.T) {
+	m := tags.Manifest{}
+	got := tags.GetTags(m, "NONEXISTENT")
+	if got != nil {
+		t.Errorf("GetTags for missing key = %v, want nil", got)
+	}
+}
+
 func TestFilterByTag(t *testing.T) {
 	m := tags.Manifest{}
 	tags.SetTags(m, "DB_PASSWORD", []string{"prod", "database"})
@@ -56,6 +64,16 @@ func TestFilterByTag(t *testing.T) {
 	dev := tags.FilterByTag(m, "dev")
 	if len(dev) != 1 || dev[0] != "DEV_TOKEN" {
 		t.Errorf("dev keys = %v, want [DEV_TOKEN]", dev)
+	}
+}
+
+func TestFilterByTagNoMatch(t *testing.T) {
+	m := tags.Manifest{}
+	tags.SetTags(m, "DB_PASSWORD", []string{"prod"})
+
+	got := tags.FilterByTag(m, "staging")
+	if len(got) != 0 {
+		t.Errorf("expected no keys for tag 'staging', got %v", got)
 	}
 }
 
