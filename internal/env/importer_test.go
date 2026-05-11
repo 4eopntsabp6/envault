@@ -53,6 +53,24 @@ func TestImportFileMissing(t *testing.T) {
 	}
 }
 
+func TestImportFileEmpty(t *testing.T) {
+	dir := t.TempDir()
+	envFile := filepath.Join(dir, ".env")
+
+	if err := os.WriteFile(envFile, []byte(""), 0600); err != nil {
+		t.Fatalf("write empty env file: %v", err)
+	}
+
+	v := newTestVault(t)
+	n, err := ImportFile(envFile, v)
+	if err != nil {
+		t.Fatalf("ImportFile on empty file: %v", err)
+	}
+	if n != 0 {
+		t.Errorf("expected 0 imported entries for empty file, got %d", n)
+	}
+}
+
 func TestExportFile(t *testing.T) {
 	dir := t.TempDir()
 	outFile := filepath.Join(dir, "exported.env")
