@@ -21,6 +21,10 @@ type CloneOptions struct {
 
 // CloneVault copies secrets from src into dst according to opts.
 // It returns the number of keys written and any error encountered.
+//
+// If opts.Keys is non-empty, only those keys are copied; a missing key in src
+// is treated as an error. If opts.Overwrite is false, existing keys in dst are
+// left unchanged and do not count toward the returned written total.
 func CloneVault(src, dst *store.Vault, opts CloneOptions) (int, error) {
 	if src == nil {
 		return 0, fmt.Errorf("clone: source vault must not be nil")
@@ -56,4 +60,15 @@ func CloneVault(src, dst *store.Vault, opts CloneOptions) (int, error) {
 	}
 
 	return written, nil
+}
+
+// MustCloneVault is like CloneVault but panics on error.
+// It is intended for use in tests or initialisation code where a cloning
+// failure represents an unrecoverable programming error.
+func MustCloneVault(src, dst *store.Vault, opts CloneOptions) int {
+	n, err := CloneVault(src, dst, opts)
+	if err != nil {
+		panic(err)
+	}
+	return n
 }
