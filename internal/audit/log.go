@@ -81,6 +81,22 @@ func ReadAll(path string) ([]Entry, error) {
 	return entries, nil
 }
 
+// Filter returns only the entries that match the given project and/or action.
+// Pass an empty string to skip filtering on that field.
+func Filter(entries []Entry, project, action string) []Entry {
+	var result []Entry
+	for _, e := range entries {
+		if project != "" && e.Project != project {
+			continue
+		}
+		if action != "" && e.Action != action {
+			continue
+		}
+		result = append(result, e)
+	}
+	return result
+}
+
 func splitLines(data []byte) [][]byte {
 	var lines [][]byte
 	start := 0
